@@ -39,8 +39,7 @@ def main():
     rsi_strategy = RSIStrategy(
         data=data,
         rsi_period=14,
-        overbought=70,
-        oversold=30
+        config_path='config/config.json'
     )
     
     # Run backtest
@@ -63,8 +62,8 @@ def main():
     fig = rsi_strategy.plot_results()
     
     # Show plot
-    plt.tight_layout()
-    plt.show()
+    fig.tight_layout()
+    fig.show()
     
     return results
 

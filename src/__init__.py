@@ -6,4 +6,4 @@ various Machine Learning and Deep Learning techniques.
 """
 
 __version__ = '0.1.0'
-__author__ = 'AI/ML Student' 
+__author__ = 'Neelansh Gupta'

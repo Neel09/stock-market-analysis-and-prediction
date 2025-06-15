@@ -31,8 +31,8 @@ class RSIStrategy(BaseStrategy):
             overbought (int, optional): Overbought threshold
             oversold (int, optional): Oversold threshold
         """
-        super().__init__('rsi', data, config, config_path)
-        
+        super().__init__('rsi_strategy', data, config, config_path)
+
         # Set strategy parameters
         self.rsi_period = rsi_period or self.strategy_config.get('rsi_period', 14)
         self.overbought = overbought or self.strategy_config.get('overbought', 70)

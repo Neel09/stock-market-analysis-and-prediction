@@ -52,9 +52,11 @@ def run_nifty50_strategies(config_path, period="5y", index_name="NIFTY 50"):
         config = json.load(f)
     
     # Fetch Nifty 50 data
-    fetcher = NiftyDataFetcher(config_path)
-    data = fetcher.fetch_nifty_data(period=period, index_name=index_name)
-    
+    # fetcher = NiftyDataFetcher(config_path)
+    # data = fetcher.fetch_nifty_data(period=period, index_name=index_name)
+    data = NiftyDataFetcher.fetch_data_from_csv(
+        '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
+
     # Determine if we're using sample data
     using_sample_data = '_sample' in str(data.index.name) if hasattr(data.index, 'name') else False
     if not using_sample_data:
@@ -115,18 +117,18 @@ def run_nifty50_strategies(config_path, period="5y", index_name="NIFTY 50"):
     results["Bollinger Bands"] = bb_results
     
     # 5. ML Strategy (if available and not using sample data)
-    if ML_AVAILABLE and not using_sample_data:
-        print("\n5. Running ML strategy...")
-        ml_strategy = MLStrategy(
-            data=data,
-            config=config,
-            model_type='logistic'
-        )
-        ml_results = ml_strategy.run_backtest()
-        strategies["ML"] = ml_strategy
-        results["ML"] = ml_results
-    else:
-        print("\n5. Skipping ML strategy (not available or using sample data)")
+    # if ML_AVAILABLE and not using_sample_data:
+    #     print("\n5. Running ML strategy...")
+    #     ml_strategy = MLStrategy(
+    #         data=data,
+    #         config=config,
+    #         model_type='logistic'
+    #     )
+    #     ml_results = ml_strategy.run_backtest()
+    #     strategies["ML"] = ml_strategy
+    #     results["ML"] = ml_results
+    # else:
+    #     print("\n5. Skipping ML strategy (not available or using sample data)")
     
     # 6. LSTM Strategy (if available and not using sample data)
     if LSTM_AVAILABLE and not using_sample_data:

@@ -1,0 +1,116 @@
+{
+  "data": {
+    "default_symbols": ["NIFTY 50"],
+    "default_timeframe": "1d",
+    "default_period": "1y"
+  },
+  "backtest": {
+    "initial_capital": 100000,
+    "commission": 0.001,
+    "slippage": 0.001,
+    "position_size": 0.2,
+    "risk_free_rate": 0.02
+  },
+  "logging": {
+    "level": "INFO",
+    "log_dir": "../logs"
+  },
+  "strategies": {
+    "moving_average_crossover": {
+      "short_window": 20,
+      "long_window": 50
+    },
+    "rsi_strategy": {
+      "rsi_period": 14,
+      "overbought": 70,
+      "oversold": 30
+    },
+    "macd_strategy": {
+      "fast_period": 12,
+      "slow_period": 26,
+      "signal_period": 9
+    },
+    "bollinger_bands": {
+      "window": 20,
+      "num_std_dev": 2
+    },
+    "ml_strategy": {
+      "features": [
+        "rsi", "macd", "bb_width", "close_sma20_ratio",
+        "return_1d", "return_5d", "volume_ratio"
+      ],
+      "model_type": "logistic",
+      "train_size": 0.7
+    },
+    "lstm_strategy": {
+      "sequence_length": 30,
+      "units": 50,
+      "dropout": 0.2,
+      "epochs": 50,
+      "batch_size": 32
+    },
+    "ml_linear": {
+      "train_size": 0.7,
+      "features": ["close", "volume", "rsi", "macd", "bollinger"],
+      "target": "return_1d",
+      "cv_folds": 5
+    },
+    "ml_ensemble": {
+      "train_size": 0.7,
+      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr", "obv"],
+      "target": "return_1d",
+      "model_type": "random_forest",
+      "n_estimators": 100,
+      "max_depth": 10,
+      "cv_folds": 5
+    },
+    "lstm": {
+      "train_size": 0.7,
+      "sequence_length": 60,
+      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr"],
+      "target": "return_1d",
+      "epochs": 50,
+      "batch_size": 32,
+      "neurons": [64, 32],
+      "dropout": 0.2
+    },
+    "gru": {
+      "train_size": 0.7,
+      "sequence_length": 60,
+      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr"],
+      "target": "return_1d",
+      "epochs": 50,
+      "batch_size": 32,
+      "neurons": [64, 32],
+      "dropout": 0.2
+    },
+    "transformer": {
+      "train_size": 0.7,
+      "sequence_length": 60,
+      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr"],
+      "target": "return_1d",
+      "epochs": 50,
+      "batch_size": 32,
+      "n_heads": 4,
+      "d_model": 64,
+      "dropout": 0.1
+    },
+    "cnn_lstm": {
+      "train_size": 0.7,
+      "sequence_length": 60,
+      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr"],
+      "target": "return_1d",
+      "epochs": 50,
+      "batch_size": 32,
+      "cnn_filters": [32, 64],
+      "cnn_kernel_size": 3,
+      "lstm_units": 50,
+      "dropout": 0.2
+    }
+  },
+  "paths": {
+    "data_dir": "data",
+    "results_dir": "results",
+    "models_dir": "models"
+  }
+} 

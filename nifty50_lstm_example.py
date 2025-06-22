@@ -11,6 +11,8 @@ import os
 import sys
 import matplotlib.pyplot as plt
 
+from src.strategies.lstm_strategy import LSTMStrategy
+
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -19,6 +21,7 @@ from src.utils.nifty_data_fetcher import NiftyDataFetcher
 
 # Import RSI strategy
 from src.strategies.rsi_strategy import RSIStrategy
+
 
 def main():
     """
@@ -33,19 +36,15 @@ def main():
 
     print(f"Data shape: {data.shape}")
     print(f"Date range: {data.index[0]} to {data.index[-1]}")
-    
+
     # Initialize RSI strategy
     print("\nInitializing RSI strategy...")
-    rsi_strategy = RSIStrategy(
-        data=data,
-        rsi_period=14,
-        config_path='config/config.json'
-    )
-    
+    lstm_strategy = LSTMStrategy(data=data, config_path='config/config.json')
+
     # Run backtest
     print("Running backtest...")
-    results = rsi_strategy.run_backtest()
-    
+    results = lstm_strategy.run_backtest()
+
     # Print performance metrics
     print("\nPerformance Metrics:")
     for metric, value in results["metrics"].items():
@@ -56,16 +55,17 @@ def main():
                 print(f"  {metric}: {value:.4f}")
         else:
             print(f"  {metric}: {value}")
-    
+
     # Plot results
     print("\nPlotting results...")
-    fig = rsi_strategy.plot_results()
-    
+    fig = lstm_strategy.plot_results()
+
     # Show plot
     fig.tight_layout()
     fig.show()
-    
+
     return results
 
+
 if __name__ == "__main__":
-    main() 
+    main()

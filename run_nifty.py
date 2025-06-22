@@ -27,7 +27,7 @@ def main():
         
         print(f"Fetching {args.index} data for period {args.period}...")
         fetcher = NiftyDataFetcher(args.config)
-        data = fetcher.fetch_nifty_data(period=args.period, index_name=args.index)
+        data = fetcher.fetch_nifty_data(period=args.period, ticker_symbol=args.index)
         
         print(f"\nData shape: {data.shape}")
         print("\nSample data:")

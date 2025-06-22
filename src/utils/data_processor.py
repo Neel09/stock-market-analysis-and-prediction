@@ -17,7 +17,10 @@ class DataProcessor:
         """
         # Initialize scalers dictionary
         self.scalers = {}
-        
+
+    """
+    Feature Engineering / Technical Indicators
+    """
     def add_technical_indicators(self, data):
         """
         Add technical indicators to the dataframe.
@@ -107,12 +110,12 @@ class DataProcessor:
         df['close_sma20_ratio'] = df['Close'] / df['sma_20']
         df['close_sma50_ratio'] = df['Close'] / df['sma_50']
         df['close_sma200_ratio'] = df['Close'] / df['sma_200']
-        
+
         # Drop NaN values
         df = df.dropna()
         
         return df
-    
+
     def create_sequences(self, data, sequence_length, target_column='return_1d', features=None):
         """
         Create sequences for time series models like LSTM.

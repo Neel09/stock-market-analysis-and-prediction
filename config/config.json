@@ -69,10 +69,10 @@
       "sequence_length": 60,
       "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
       "target": "return_1d",
-      "epochs": 100,
+      "epochs": 50,
       "batch_size": 32,
       "neurons": [64, 64, 64],
-      "dropout": 0.1
+      "dropout": 0.0
     },
     "gru": {
       "train_size": 0.7,

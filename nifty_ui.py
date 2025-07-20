@@ -34,7 +34,7 @@ nifty_tickers = [
 
 # Set page configuration
 st.set_page_config(
-    page_title="Nifty 50 Algorithmic Trading",
+    page_title="Stock Market Analysis & Prediction System",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -180,7 +180,7 @@ def run_backtest(symbol, period, interval, selected_strategies, strategy_params=
 def main():
     """Main function."""
     # Sidebar
-    st.sidebar.markdown("## Nifty 50 Trading System")
+    st.sidebar.markdown("## Stock Market Analysis Tool")
     st.sidebar.markdown("Configure your backtest parameters below:")
 
     # Parameters
@@ -195,7 +195,8 @@ def main():
     st.sidebar.markdown("## Select Strategies")
     strategies = {
         "moving_average_crossover": "Moving Average Crossover",
-        "rsi_strategy": "RSI Strategy"
+        "rsi_strategy": "RSI Strategy",
+        "lstm_strategy": "LSTM Strategy"
         # "macd_strategy": "MACD Strategy",
         # "bollinger_bands": "Bollinger Bands"
     }
@@ -229,7 +230,12 @@ def main():
                                          key=f"oversold_{strategy_id}")
                     strategy_params[strategy_id] = {"rsi_period": rsi_period, "overbought": overbought,
                                                     "oversold": oversold}
-
+                elif strategy_id == "lstm_strategy":
+                    lstm_period = st.slider("LSTM Period", min_value=5, max_value=30, value=14, step=1,
+                                           key=f"lstm_period_{strategy_id}")
+                    lstm_window = st.slider("LSTM Window", min_value=5, max_value=50, value=20, step=1,
+                                            key=f"lstm_window_{strategy_id}")
+                    strategy_params[strategy_id] = {}
                 # elif strategy_id == "macd_strategy":
                 #     fast_period = st.slider("Fast Period", min_value=5, max_value=20, value=12, step=1,
                 #                             key=f"fast_period_{strategy_id}")
@@ -288,7 +294,7 @@ def main():
         load_existing = st.checkbox("📊 Load Results", value=True, key="load_existing_checkbox")
 
     # Main content
-    st.markdown("<h1 class='main-header'>Nifty 50 Algorithmic Trading System</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='main-header'>Stock Market Analysis & Prediction System</h1>", unsafe_allow_html=True)
 
     # Dashboard Overview
     col1, col2, col3 = st.columns(3)

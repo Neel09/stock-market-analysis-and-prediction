@@ -29,10 +29,11 @@ def main():
     """
     # Fetch Nifty 50 data
     print("Fetching Nifty 50 data...")
-    # fetcher = NiftyDataFetcher()
+    fetcher = NiftyDataFetcher()
     # data = fetcher.fetch_nifty_data(period="1y", index_name="NIFTY 50")
     data = NiftyDataFetcher.fetch_data_from_csv(
         '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
+    # data = fetcher.fetch_ticker_data_from_csv(ticker_symbol="BAJAJFINSV.NS")
 
     print(f"Data shape: {data.shape}")
     print(f"Date range: {data.index[0]} to {data.index[-1]}")

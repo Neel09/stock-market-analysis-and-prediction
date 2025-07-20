@@ -238,20 +238,6 @@ class LSTMModel:
         y_pred_proba = self.model.predict(X)
         y_pred = (y_pred_proba > 0.5).astype(int).flatten()
 
-        # Plot the data
-        train = data[:self.X.shape[0]]
-        valid = data[self.X.shape[0]:]
-        valid['Predictions'] = y_pred
-        # Visualize the data
-        plt.figure(figsize=(16, 6))
-        plt.title('Model')
-        plt.xlabel('Date', fontsize=18)
-        plt.ylabel('Close Price USD ($)', fontsize=18)
-        plt.plot(train['Close'])
-        plt.plot(valid[['Close', 'Predictions']])
-        plt.legend(['Train', 'Val', 'Predictions'], loc='lower right')
-        plt.show()
-
         # Calculate precision, recall, f1
         from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 

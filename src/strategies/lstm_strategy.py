@@ -266,10 +266,11 @@ if __name__ == '__main__':
     # fetcher = DataFetcher(config_path)
     # data = fetcher.fetch_data('AAPL', period='2y')
 
-    data = NiftyDataFetcher.fetch_data_from_csv(
-        # '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
-        '/Users/neelansh/Desktop/Projects/My Projects/stock-market-analysis-and-prediction/src/data/ADANIENT.NS_1d_10y.csv')
-
+    # data = NiftyDataFetcher.fetch_data_from_csv(
+    #     # '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
+    #     '/Users/neelansh/Desktop/Projects/My Projects/stock-market-analysis-and-prediction/src/data/ADANIENT.NS_1d_10y.csv')
+    fetcher = NiftyDataFetcher()
+    data = fetcher.fetch_ticker_data_from_csv(ticker_symbol="BAJAJFINSV.NS")
     # Initialize strategy
     strategy = LSTMStrategy(data=data, config=config)
 

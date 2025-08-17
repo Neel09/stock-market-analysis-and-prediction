@@ -18,6 +18,8 @@ Image.MAX_IMAGE_PIXELS = None
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from src.backtest.run_backtest import BacktestRunner
+from src.utils.strategy_explainer import StrategyExplainer
+from src.utils.chatbot_interface import ChatbotInterface
 
 nifty_tickers = [
     "ADANIENT.NS", "ADANIPORTS.NS", "APOLLOHOSP.NS", "ASIANPAINT.NS", "AXISBANK.NS",
@@ -274,6 +276,47 @@ def main():
             }
         }
 
+    # LLM options for strategy explanation and chatbot
+    with st.sidebar.expander("LLM Options", expanded=False):
+        use_llm = st.checkbox("Use LLM for Explanations", value=True, key="use_llm_checkbox")
+
+        # LLM provider selection
+        llm_provider = st.selectbox("LLM Provider", 
+                                   options=["OpenAI", "DeepSeek", "Junie", "Perplexity"], 
+                                   index=0, 
+                                   key="llm_provider_select")
+
+        # Set API URL based on provider
+        if llm_provider == "OpenAI":
+            api_url = 'https://api.openai.com/v1/chat/completions'
+            model_options = ["gpt-3.5-turbo", "gpt-4"]
+            api_key_label = "OpenAI API Key"
+        elif llm_provider == "DeepSeek":
+            api_url = 'https://api.deepseek.com/chat/completions'
+            model_options = ["deepseek-chat", "deepseek-coder"]
+            api_key_label = "DeepSeek API Key"
+        elif llm_provider == "Junie":
+            api_url = 'https://api.junie.io/v1/chat/completions'
+            model_options = ["junie-7b", "junie-13b"]
+            api_key_label = "Junie API Key"
+        elif llm_provider == "Perplexity":
+            api_url = 'https://api.perplexity.ai/chat/completions'
+            model_options = ["sonar-small-chat", "sonar-medium-chat", "sonar-pro"]
+            api_key_label = "Perplexity API Key"
+
+        llm_api_key = st.text_input(f"{api_key_label}", value="", type="password", key="llm_api_key_input")
+        llm_model = st.selectbox("LLM Model", options=model_options, index=0, key="llm_model_select")
+
+        # Update config with LLM options
+        if use_llm:
+            advanced_config['sentiment'] = {
+                'llm_api_key': llm_api_key,
+                'llm_model': llm_model,
+                'llm_api_url': api_url,
+                'max_retries': 3,
+                'retry_delay': 2
+            }
+
     # Create radio buttons in the sidebar
     test_option = st.sidebar.radio(
         "Select Run Mode",
@@ -345,7 +388,7 @@ def main():
                 status.success("✅ Backtest completed successfully!")
 
                 # Create tabs for results
-                tab1, tab2, tab3 = st.tabs(["📈 Performance Comparison", "🔍 Detailed Metrics", "📊 Trading Signals"])
+                tab1, tab2, tab3, tab4 = st.tabs(["📈 Performance Comparison", "🔍 Detailed Metrics", "📊 Trading Signals", "💬 AI Assistant"])
 
                 with tab1:
                     # Display comparison chart
@@ -380,6 +423,31 @@ def main():
                         ).interactive()
 
                         st.altair_chart(chart, use_container_width=True)
+
+                        # Add LLM-based strategy comparison explanation
+                        st.markdown("<h2 class='sub-header'>Strategy Analysis</h2>", unsafe_allow_html=True)
+
+                        # Create a dictionary of strategy metrics for explanation
+                        comparison_data = {}
+                        strategy_names = {}
+
+                        for strategy in selected_strategies:
+                            if strategy in backtest_results['results']:
+                                comparison_data[strategy] = backtest_results['results'][strategy]['metrics']
+                                strategy_names[strategy] = strategies[strategy]
+
+                        # Initialize strategy explainer
+                        if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                            strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                            with st.spinner("Generating strategy analysis..."):
+                                explanation = strategy_explainer.explain_strategy_comparison(comparison_data, strategy_names)
+                                st.markdown(explanation)
+                        else:
+                            st.info("To get an AI-powered analysis of strategy performance, please add your LLM API key in the sidebar under 'LLM Options'.")
+                            # Use mock explanation
+                            strategy_explainer = StrategyExplainer()
+                            explanation = strategy_explainer._get_mock_explanation(comparison_data, strategy_names)
+                            st.markdown(explanation)
 
                 with tab2:
                     # Display metrics in a more interactive way
@@ -523,8 +591,96 @@ def main():
                                 file_name=f"{strategy_id}_signals.csv",
                                 mime="text/csv",
                             )
+
+                            # Add LLM-based signal explanation
+                            st.subheader("Signal Analysis")
+
+                            if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                                strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                                with st.spinner("Analyzing trading signals..."):
+                                    # Get price data if available
+                                    price_data = None
+                                    if 'data' in result:
+                                        price_data = result['data']
+
+                                    explanation = strategy_explainer.explain_trading_signals(
+                                        positions, signal_strategy, price_data)
+                                    st.markdown(explanation)
+                            else:
+                                st.info("To get an AI-powered analysis of trading signals, please add your LLM API key in the sidebar under 'LLM Options'.")
+                                # Use mock explanation
+                                strategy_explainer = StrategyExplainer()
+                                explanation = strategy_explainer._get_mock_signal_explanation(signal_strategy)
+                                st.markdown(explanation)
                         else:
                             st.info("No signals match the selected filters.")
+
+                with tab4:
+                    # AI Assistant / Chatbot Interface
+                    st.markdown("<h2 class='sub-header'>Trading Strategy Assistant</h2>", unsafe_allow_html=True)
+
+                    # Initialize chatbot if not already in session state
+                    if 'chatbot' not in st.session_state:
+                        if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                            st.session_state.chatbot = ChatbotInterface(advanced_config['sentiment'])
+                        else:
+                            st.session_state.chatbot = ChatbotInterface()
+
+                    # Add strategy results to chatbot context
+                    if 'results' in backtest_results:
+                        st.session_state.chatbot.add_strategies_context(backtest_results['results'])
+
+                    # Display welcome message if conversation is empty
+                    if not st.session_state.chatbot.conversation_history:
+                        welcome_message = st.session_state.chatbot.get_welcome_message()
+                        st.markdown(welcome_message)
+
+                    # Display conversation history
+                    for message in st.session_state.chatbot.get_conversation_history():
+                        if message['is_user']:
+                            st.markdown(f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 10px;'><strong>You:</strong> {message['content']}</div>", unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"<div style='background-color: #e1f5fe; padding: 10px; border-radius: 10px; margin-bottom: 10px;'><strong>Assistant:</strong> {message['content']}</div>", unsafe_allow_html=True)
+
+                    # User input
+                    user_query = st.text_input("Ask a question about your trading strategies:", key="user_query")
+
+                    # Suggested questions
+                    st.markdown("### Suggested Questions")
+                    suggested_questions = st.session_state.chatbot.get_suggested_questions()
+
+                    # Create columns for suggested questions
+                    question_cols = st.columns(2)
+                    for i, question in enumerate(suggested_questions[:6]):  # Limit to 6 questions
+                        col_idx = i % 2
+                        with question_cols[col_idx]:
+                            if st.button(question, key=f"suggested_q_{i}"):
+                                user_query = question
+
+                    # Process user query
+                    if user_query:
+                        if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                            with st.spinner("Generating response..."):
+                                response = st.session_state.chatbot.get_response(user_query)
+                                # Force a rerun to display the new messages
+                                st.experimental_rerun()
+                        else:
+                            st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
+                            response = st.session_state.chatbot.get_response(user_query)
+                            # Force a rerun to display the new messages
+                            st.experimental_rerun()
+
+                    # Add buttons to clear conversation or context
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        if st.button("Clear Conversation", key="clear_conversation"):
+                            st.session_state.chatbot.clear_conversation()
+                            st.experimental_rerun()
+                    with col2:
+                        if st.button("Reset Assistant", key="reset_assistant"):
+                            st.session_state.chatbot.clear_conversation()
+                            st.session_state.chatbot.clear_context()
+                            st.experimental_rerun()
 
     elif load_existing and os.path.exists(os.path.join('results', 'backtest')):
         st.markdown("<h2 class='sub-header'>Existing Backtest Results</h2>", unsafe_allow_html=True)
@@ -542,10 +698,13 @@ def main():
             if os.path.exists(os.path.join('results', 'backtest', f"{strategy}_metrics.json")):
                 available_strategies.append(strategy)
 
-        # Create tabs for each strategy
+        # Create tabs for strategies and AI Assistant
         if available_strategies:
-            tabs = st.tabs([strategies[s] for s in available_strategies])
+            # Add AI Assistant tab to the list of strategy tabs
+            tab_names = [strategies[s] for s in available_strategies] + ["💬 AI Assistant"]
+            tabs = st.tabs(tab_names)
 
+            # Process strategy tabs
             for i, strategy in enumerate(available_strategies):
                 with tabs[i]:
                     results = load_results(strategy)
@@ -607,6 +766,95 @@ def main():
 
                             # Show table with pagination
                             st.dataframe(display_positions, use_container_width=True)
+
+                        # Add LLM-based signal explanation
+                        with st.expander("Signal Analysis"):
+                            if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                                strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                                with st.spinner("Analyzing trading signals..."):
+                                    explanation = strategy_explainer.explain_trading_signals(
+                                        positions, strategies[strategy])
+                                    st.markdown(explanation)
+                            else:
+                                st.info("To get an AI-powered analysis of trading signals, please add your LLM API key in the sidebar under 'LLM Options'.")
+                                # Use mock explanation
+                                strategy_explainer = StrategyExplainer()
+                                explanation = strategy_explainer._get_mock_signal_explanation(strategies[strategy])
+                                st.markdown(explanation)
+
+            # AI Assistant tab (last tab)
+            with tabs[-1]:
+                # AI Assistant / Chatbot Interface
+                st.markdown("<h2 class='sub-header'>Trading Strategy Assistant</h2>", unsafe_allow_html=True)
+
+                # Initialize chatbot if not already in session state
+                if 'chatbot' not in st.session_state:
+                    if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                        st.session_state.chatbot = ChatbotInterface(advanced_config['sentiment'])
+                    else:
+                        st.session_state.chatbot = ChatbotInterface()
+
+                # Add strategy results to chatbot context
+                strategies_results = {}
+                for strategy in available_strategies:
+                    results = load_results(strategy)
+                    if results and 'metrics' in results:
+                        strategies_results[strategy] = {'metrics': results['metrics']}
+
+                if strategies_results:
+                    st.session_state.chatbot.add_strategies_context(strategies_results)
+
+                # Display welcome message if conversation is empty
+                if not st.session_state.chatbot.conversation_history:
+                    welcome_message = st.session_state.chatbot.get_welcome_message()
+                    st.markdown(welcome_message)
+
+                # Display conversation history
+                for message in st.session_state.chatbot.get_conversation_history():
+                    if message['is_user']:
+                        st.markdown(f"<div style='background-color: #f0f2f6; padding: 10px; border-radius: 10px; margin-bottom: 10px;'><strong>You:</strong> {message['content']}</div>", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"<div style='background-color: #e1f5fe; padding: 10px; border-radius: 10px; margin-bottom: 10px;'><strong>Assistant:</strong> {message['content']}</div>", unsafe_allow_html=True)
+
+                # User input
+                user_query = st.text_input("Ask a question about your trading strategies:", key="user_query_existing")
+
+                # Suggested questions
+                st.markdown("### Suggested Questions")
+                suggested_questions = st.session_state.chatbot.get_suggested_questions()
+
+                # Create columns for suggested questions
+                question_cols = st.columns(2)
+                for i, question in enumerate(suggested_questions[:6]):  # Limit to 6 questions
+                    col_idx = i % 2
+                    with question_cols[col_idx]:
+                        if st.button(question, key=f"suggested_q_existing_{i}"):
+                            user_query = question
+
+                # Process user query
+                if user_query:
+                    if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
+                        with st.spinner("Generating response..."):
+                            response = st.session_state.chatbot.get_response(user_query)
+                            # Force a rerun to display the new messages
+                            st.experimental_rerun()
+                    else:
+                        st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
+                        response = st.session_state.chatbot.get_response(user_query)
+                        # Force a rerun to display the new messages
+                        st.experimental_rerun()
+
+                # Add buttons to clear conversation or context
+                col1, col2 = st.columns(2)
+                with col1:
+                    if st.button("Clear Conversation", key="clear_conversation_existing"):
+                        st.session_state.chatbot.clear_conversation()
+                        st.experimental_rerun()
+                with col2:
+                    if st.button("Reset Assistant", key="reset_assistant_existing"):
+                        st.session_state.chatbot.clear_conversation()
+                        st.session_state.chatbot.clear_context()
+                        st.experimental_rerun()
         else:
             st.warning("No existing backtest results found. Please run a backtest first.")
 
@@ -617,9 +865,18 @@ def main():
         2. **Select Strategies**: Choose which trading strategies to evaluate
         3. **Customize Strategy Parameters**: Adjust parameters for each selected strategy
         4. **Set Advanced Options**: Configure capital, commission, and risk parameters
-        5. **Run Backtest**: Click the Run Backtest button to execute
-        6. **Analyze Results**: Compare performance across strategies using the interactive charts and tables
-        7. **Export Data**: Download metrics and signals for further analysis
+        5. **Configure LLM Options**: Select your preferred LLM provider (OpenAI, DeepSeek, Junie, or Perplexity) and add your API key to enable AI-powered explanations and chatbot
+        6. **Run Backtest**: Click the Run Backtest button to execute
+        7. **Analyze Results**: Compare performance across strategies using the interactive charts and tables
+        8. **Review AI Analysis**: Read the AI-generated explanations of strategy performance and trading signals
+        9. **Use the AI Assistant**: Ask questions about your strategies in the AI Assistant tab
+        10. **Export Data**: Download metrics and signals for further analysis
+
+        **AI Features**:
+        - **Strategy Analysis**: Get detailed explanations of strategy performance comparisons
+        - **Signal Analysis**: Understand the patterns and implications of trading signals
+        - **AI Assistant**: Ask questions about your strategies and get personalized answers
+        - **Suggested Questions**: Click on suggested questions to quickly get insights
         """)
 
 

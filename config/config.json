@@ -15,7 +15,23 @@
     "level": "INFO",
     "log_dir": "../logs"
   },
+  "sentiment": {
+    "llm_api_key": "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",
+    "llm_api_url": "https://api.perplexity.ai/chat/completions",
+    "llm_model": "sonar-pro",
+    "max_retries": 3,
+    "retry_delay": 2,
+    "news_api_key": "0fbe30fbfa3b49da958d23af668d6548",
+    "news_sources": "economictimes.indiatimes.com,livemint.com,business-standard.com,moneycontrol.com,timesofindia.indiatimes.com/business,finshots.in"
+  },
   "strategies": {
+    "sentiment_strategy": {
+      "sentiment_threshold": 0.2,
+      "market_sentiment_weight": 0.4,
+      "use_technical_indicators": true,
+      "days": 7,
+      "max_news": 10
+    },
     "moving_average_crossover": {
       "short_window": 50,
       "long_window": 200

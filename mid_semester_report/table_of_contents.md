@@ -52,6 +52,16 @@
 7.3 Real-time Trading Implementation
 7.4 Performance Optimization
 
+## Chapter 8: Sentiment Analysis with Large Language Models
+8.1 Introduction to Sentiment Analysis in Trading
+8.2 Implementation of the Sentiment Analysis System
+8.3 LLM-Based Sentiment Analysis Approach
+8.4 Sentiment-Based Trading Strategy
+8.5 Performance Evaluation and Comparison
+8.6 Challenges and Limitations
+8.7 Future Improvements
+8.8 Conclusion
+
 ## Bibliography/References
 
 ## Appendices

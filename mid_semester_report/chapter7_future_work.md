@@ -89,10 +89,17 @@ Beyond the core remaining tasks, several potential enhancements have been identi
 The system could be enhanced with additional data sources:
 
 1. **Alternative Data Integration**:
-   - News sentiment analysis using financial news APIs
+   - News sentiment analysis using financial news APIs (Implemented)
    - Social media sentiment analysis (Twitter, Reddit)
    - Economic indicators and macroeconomic data
    - Corporate events and earnings announcements
+
+   > **Implementation Update**: News sentiment analysis has been implemented using Large Language Models (LLMs). The system now includes:
+   > - A sentiment analyzer that uses LLMs to analyze financial news sentiment
+   > - A news fetcher that retrieves financial news for specific stocks and markets
+   > - Integration of sentiment data into the data processing pipeline
+   > - A sentiment-based trading strategy that uses news sentiment to generate trading signals
+   > - Configuration options for sentiment analysis in the config file
 
 2. **High-Frequency Data**:
    - Tick-level data for more granular analysis

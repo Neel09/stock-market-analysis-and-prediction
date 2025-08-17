@@ -28,11 +28,17 @@ The system architecture follows a modular design pattern with clear separation o
 
 1. **Data Components**:
    - Data Fetcher: Retrieves market data from various sources
-   - Data Processor: Cleans and prepares data for analysis
+   - News Fetcher: Retrieves financial news for stocks and markets
+   - Sentiment Analyzer: Analyzes sentiment from financial news using LLM
+   - Data Processor: Cleans and prepares data for analysis, including sentiment data
 
 2. **Strategy Components**:
    - Base Strategy: Abstract class defining the strategy interface
-   - Specific Strategy Implementations: Various trading strategies
+   - Specific Strategy Implementations: Various trading strategies including:
+     - Technical Analysis Strategies (MA Crossover, RSI, MACD, Bollinger Bands)
+     - Machine Learning Strategies
+     - LSTM Deep Learning Strategies
+     - Sentiment-based Trading Strategies
 
 3. **Backtest Engine**:
    - Simulates trading over historical data

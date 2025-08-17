@@ -35,11 +35,8 @@
       "num_std_dev": 2
     },
     "ml_strategy": {
-      "features": [
-        "rsi", "macd", "bb_width", "close_sma20_ratio",
-        "return_1d", "return_5d", "volume_ratio"
-      ],
-      "model_type": "logistic",
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
+      "model_type": "linear",
       "train_size": 0.7
     },
     "lstm_strategy": {
@@ -51,13 +48,14 @@
     },
     "ml_linear": {
       "train_size": 0.7,
-      "features": ["close", "volume", "rsi", "macd", "bollinger"],
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
+      "model_type": "linear",
       "target": "return_1d",
       "cv_folds": 5
     },
     "ml_ensemble": {
       "train_size": 0.7,
-      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr", "obv"],
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
       "target": "return_1d",
       "model_type": "random_forest",
       "n_estimators": 100,
@@ -71,7 +69,7 @@
       "target": "return_1d",
       "epochs": 50,
       "batch_size": 32,
-      "neurons": [64, 64, 64],
+      "neurons": [64, 64, 32],
       "dropout": 0.0
     },
     "gru": {

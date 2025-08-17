@@ -248,7 +248,7 @@ class BaseStrategy(ABC):
         ax1.grid(True)
         
         # Plot daily returns
-        ax2.plot(self.returns.index, self.returns, label='Daily Returns', color='gray', alpha=0.7)
+        ax2.plot(self.returns.index, self.returns, label='Daily Returns', color='gray', alpha=1.0)
         ax2.set_ylabel('Daily Returns')
         ax2.grid(True)
         

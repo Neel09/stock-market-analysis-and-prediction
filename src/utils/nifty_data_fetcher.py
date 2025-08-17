@@ -147,7 +147,7 @@ class NiftyDataFetcher:
 
     def fetch_all_nifty_data(self, period='5y', interval='1d'):
 
-        nifty_tickers = ["ADANIENT.NS"]
+        # nifty_tickers = ["ADANIENT.NS"]
 
         print(self.data_dir)
         directory = f"{self.data_dir}/{interval}/{period}"
@@ -376,7 +376,7 @@ if __name__ == "__main__":
     fetcher = NiftyDataFetcher()
     # data = fetcher.fetch_nifty_data(period="5y")
 
-    # fetcher.fetch_all_nifty_data(period="10y", interval='1h')
+    fetcher.fetch_all_nifty_data(period="5y", interval='1d')
 
     fetcher.fetch_ticker_data_from_csv("ADANIENT.NS")
 

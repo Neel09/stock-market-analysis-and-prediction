@@ -86,7 +86,7 @@ class LSTMModel:
         model.add(Dense(25))
 
         # Output layer
-        model.add(Dense(units=1, activation='sigmoid'))
+        model.add(Dense(units=1, activation='relu'))
 
         # Compile model
         model.compile(

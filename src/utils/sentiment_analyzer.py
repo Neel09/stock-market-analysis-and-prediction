@@ -79,6 +79,10 @@ class SentimentAnalyzer:
             time.sleep(0.5)
         return results
 
+
+    def get_mocked_aggeregate_sentiment(self):
+        return {'aggregate_score': -0.08833819241982506, 'sentiment_signal': -0.08833819241982506}
+
     def get_aggregate_sentiment(self, sentiment_results):
         """
         Calculate aggregate sentiment from multiple results.

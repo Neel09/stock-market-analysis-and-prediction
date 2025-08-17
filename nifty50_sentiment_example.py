@@ -39,7 +39,8 @@ def main():
     # Fetch Nifty 50 data
     print("\nFetching Nifty 50 data...")
     data_fetcher = NiftyDataFetcher(config_path)
-    nifty_data = data_fetcher.fetch_nifty_data(period='1y')
+    # nifty_data = data_fetcher.fetch_nifty_data(period='1y')
+    nifty_data = data_fetcher.fetch_ticker_data_from_csv(ticker_symbol="TATAMOTORS.NS")
 
     # Check if data is empty
     if len(nifty_data) == 0:
@@ -57,7 +58,7 @@ def main():
     sentiment_strategy = SentimentStrategy(
         data=nifty_data,
         config_path=config_path,
-        symbol='NIFTY 50',  # Use NIFTY 50 to match the data we fetched
+        symbol='TATAMOTORS.NS',  # Use NIFTY 50 to match the data we fetched
         sentiment_threshold=config['strategies']['sentiment_strategy']['sentiment_threshold'],
         market_sentiment_weight=config['strategies']['sentiment_strategy']['market_sentiment_weight'],
         use_technical_indicators=config['strategies']['sentiment_strategy']['use_technical_indicators'],
@@ -76,9 +77,9 @@ def main():
     print("\nPerformance Metrics:")
     metrics = results['metrics']
     print(f"Total Return: {metrics.get('total_return', 0):.2%}")
-    print(f"Annual Return: {metrics.get('annual_return', 0):.2%}")
+    print(f"Annual Return: {metrics.get('annualized_return', 0):.2%}")
     print(f"Sharpe Ratio: {metrics.get('sharpe_ratio', 0):.2f}")
-    print(f"Max Drawdown: {metrics.get('max_drawdown', 0):.2%}")
+    print(f"Max Drawdown: {metrics.get('maximum_drawdown', 0):.2%}")
     print(f"Win Rate: {metrics.get('win_rate', 0):.2%}")
 
     # Plot results

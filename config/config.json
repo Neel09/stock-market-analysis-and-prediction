@@ -29,7 +29,7 @@
       "sentiment_threshold": 0.2,
       "market_sentiment_weight": 0.4,
       "use_technical_indicators": true,
-      "days": 7,
+      "days": 30,
       "max_news": 10
     },
     "moving_average_crossover": {

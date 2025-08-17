@@ -16,7 +16,7 @@ class ChatbotInterface:
             config (dict): Configuration dictionary containing LLM API settings
         """
         self.config = config or {}
-        self.strategy_explainer = StrategyExplainer(config)
+        self.strategy_explainer = StrategyExplainer(config_path='config/config.json')
         self.conversation_history = []
         self.context = {}
         

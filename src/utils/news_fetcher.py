@@ -50,7 +50,7 @@ class NewsFetcher:
 
         # Prepare query
         company_name = self._get_company_name(symbol)
-        query = f"{company_name} OR {symbol} stock"
+        query = f"{company_name}"
 
         # NewsAPI endpoint
         url = "https://newsapi.org/v2/everything"
@@ -59,9 +59,9 @@ class NewsFetcher:
             'q': query,
             'from': from_date,
             'to': to_date,
-            'sortBy': 'relevancy',
+            'sortBy': 'publishedAt',
             'language': 'en',
-            'sources': self.default_sources,
+            'domains': self.default_sources,
             'apiKey': self.api_key,
             'pageSize': max_results
         }
@@ -112,29 +112,37 @@ class NewsFetcher:
             return self._get_mock_market_news(market, max_results)
 
         # Calculate date range
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=days)
+        # end_date = datetime.now()
+        # start_date = end_date - timedelta(days=days)
 
         # Format dates for API
-        from_date = start_date.strftime('%Y-%m-%d')
-        to_date = end_date.strftime('%Y-%m-%d')
+        # from_date = start_date.strftime('%Y-%m-%d')
+        # to_date = end_date.strftime('%Y-%m-%d')
 
         # Prepare query
-        query = f"{market} stock market OR Nifty OR Sensex"
+        # query = f"{market} stock market OR Nifty OR Sensex"
 
         # NewsAPI endpoint
-        url = "https://newsapi.org/v2/everything"
+        url = "https://newsapi.org/v2/top-headlines"
+
+        # params = {
+        #     'q': query,
+        #     'from': from_date,
+        #     'to': to_date,
+        #     'sortBy': 'publishedAt',
+        #     'language': 'en',
+        #     'domains': self.default_sources,
+        #     'apiKey': self.api_key,
+        #     'pageSize': max_results
+        # }
 
         params = {
-            'q': query,
-            'from': from_date,
-            'to': to_date,
-            'sortBy': 'relevancy',
-            'language': 'en',
-            'sources': self.default_sources,
-            'apiKey': self.api_key,
-            'pageSize': max_results
+            'country': "us",
+            'category': 'business',
+            'apiKey': self.api_key
         }
+
+
 
         for attempt in range(self.max_retries):
             try:
@@ -178,18 +186,31 @@ class NewsFetcher:
         """
         # This is a simplified mapping for Nifty 50 stocks
         # In a real implementation, this would be more comprehensive or use an API
+        # symbol_to_name = {
+        #     'RELIANCE.NS': 'Reliance Industries',
+        #     'TCS.NS': 'Tata Consultancy Services',
+        #     'HDFCBANK.NS': 'HDFC Bank',
+        #     'INFY.NS': 'Infosys',
+        #     'HINDUNILVR.NS': 'Hindustan Unilever',
+        #     'ICICIBANK.NS': 'ICICI Bank',
+        #     'SBIN.NS': 'State Bank of India',
+        #     'BHARTIARTL.NS': 'Bharti Airtel',
+        #     'ITC.NS': 'ITC Limited',
+        #     'KOTAKBANK.NS': 'Kotak Mahindra Bank',
+        #     'NIFTY 50': 'Nifty 50 Index'
+        # }
         symbol_to_name = {
-            'RELIANCE.NS': 'Reliance Industries',
-            'TCS.NS': 'Tata Consultancy Services',
-            'HDFCBANK.NS': 'HDFC Bank',
-            'INFY.NS': 'Infosys',
-            'HINDUNILVR.NS': 'Hindustan Unilever',
-            'ICICIBANK.NS': 'ICICI Bank',
-            'SBIN.NS': 'State Bank of India',
-            'BHARTIARTL.NS': 'Bharti Airtel',
-            'ITC.NS': 'ITC Limited',
-            'KOTAKBANK.NS': 'Kotak Mahindra Bank',
-            'NIFTY 50': 'Nifty 50 Index'
+            "ADANIENT.NS": "Adani Enterprises",
+            "ADANIPORTS.NS": "Adani Ports and Special Economic Zone",
+            "APOLLOHOSP.NS": "Apollo Hospitals",
+            "ASIANPAINT.NS": "Asian Paints",
+            "AXISBANK.NS": "Axis Bank",
+            "BAJAJ-AUTO.NS": "Bajaj Auto",
+            "BAJFINANCE.NS": "Bajaj Finance",
+            "BAJAJFINSV.NS": "Bajaj Finserv",
+            "BEL.NS": "Bharat Electronics",
+            "BHARTIARTL.NS": "Bharti Airtel",
+            "TATAMOTORS.NS" : "Tata Motors"
         }
 
         return symbol_to_name.get(symbol, symbol.replace('.NS', ''))

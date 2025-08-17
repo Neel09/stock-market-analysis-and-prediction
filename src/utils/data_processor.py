@@ -287,14 +287,15 @@ class DataProcessor:
         else:
             # Analyze sentiment for each news article
             print("Analyzing sentiment for news articles...")
-            sentiment_results = sentiment_analyzer.analyze_news_batch([
-                f"{article['title']}. {article['description']}" 
-                for article in news_articles
-            ])
-            print(f"Sentiment analysis results: {sentiment_results}")
+            # sentiment_results = sentiment_analyzer.analyze_news_batch([
+            #     f"{article['title']}. {article['description']}"
+            #     for article in news_articles
+            # ])
+            # print(f"Sentiment analysis results: {sentiment_results}")
 
             # Calculate aggregate sentiment
-            aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
+            # aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
+            aggregate_sentiment = sentiment_analyzer.get_mocked_aggeregate_sentiment()
             print(f"Aggregate sentiment: {aggregate_sentiment}")
 
             # Add sentiment data to the dataframe
@@ -355,14 +356,15 @@ class DataProcessor:
         else:
             # Analyze sentiment for each news article
             print("Analyzing sentiment for market news articles...")
-            sentiment_results = sentiment_analyzer.analyze_news_batch([
-                f"{article['title']}. {article['description']}" 
-                for article in market_news
-            ])
-            print(f"Market sentiment analysis results: {sentiment_results}")
+            # sentiment_results = sentiment_analyzer.analyze_news_batch([
+            #     f"{article['title']}. {article['description']}"
+            #     for article in market_news
+            # ])
+            # print(f"Market sentiment analysis results: {sentiment_results}")
 
             # Calculate aggregate sentiment
-            aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
+            # aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
+            aggregate_sentiment = sentiment_analyzer.get_mocked_aggeregate_sentiment()
             print(f"Aggregate market sentiment: {aggregate_sentiment}")
 
             # Add market sentiment data to the dataframe

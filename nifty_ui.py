@@ -23,7 +23,8 @@ from src.utils.chatbot_interface import ChatbotInterface
 
 nifty_tickers = [
     "ADANIENT.NS", "ADANIPORTS.NS", "APOLLOHOSP.NS", "ASIANPAINT.NS", "AXISBANK.NS",
-    "BAJAJ-AUTO.NS", "BAJFINANCE.NS", "BAJAJFINSV.NS", "BEL.NS", "BHARTIARTL.NS"
+    "BAJAJ-AUTO.NS", "BAJFINANCE.NS", "BAJAJFINSV.NS", "BEL.NS", "BHARTIARTL.NS",
+    "TATAMOTORS.NS"
     # "CIPLA.NS", "COALINDIA.NS", "DRREDDY.NS", "EICHERMOT.NS", "GRASIM.NS",
     # "HCLTECH.NS", "HDFCBANK.NS", "HDFCLIFE.NS", "HEROMOTOCO.NS", "HINDALCO.NS",
     # "HINDUNILVR.NS", "ICICIBANK.NS", "INDUSINDBK.NS", "INFY.NS", "ITC.NS",
@@ -438,7 +439,7 @@ def main():
 
                         # Initialize strategy explainer
                         if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
-                            strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                            strategy_explainer = StrategyExplainer(config=advanced_config['sentiment'])
                             with st.spinner("Generating strategy analysis..."):
                                 explanation = strategy_explainer.explain_strategy_comparison(comparison_data, strategy_names)
                                 st.markdown(explanation)
@@ -596,7 +597,7 @@ def main():
                             st.subheader("Signal Analysis")
 
                             if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
-                                strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                                strategy_explainer = StrategyExplainer(config=advanced_config['sentiment'])
                                 with st.spinner("Analyzing trading signals..."):
                                     # Get price data if available
                                     price_data = None
@@ -663,24 +664,24 @@ def main():
                             with st.spinner("Generating response..."):
                                 response = st.session_state.chatbot.get_response(user_query)
                                 # Force a rerun to display the new messages
-                                st.experimental_rerun()
+                                st.rerun()
                         else:
                             st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
                             response = st.session_state.chatbot.get_response(user_query)
                             # Force a rerun to display the new messages
-                            st.experimental_rerun()
+                            st.rerun()
 
                     # Add buttons to clear conversation or context
                     col1, col2 = st.columns(2)
                     with col1:
                         if st.button("Clear Conversation", key="clear_conversation"):
                             st.session_state.chatbot.clear_conversation()
-                            st.experimental_rerun()
+                            st.rerun()
                     with col2:
                         if st.button("Reset Assistant", key="reset_assistant"):
                             st.session_state.chatbot.clear_conversation()
                             st.session_state.chatbot.clear_context()
-                            st.experimental_rerun()
+                            st.rerun()
 
     elif load_existing and os.path.exists(os.path.join('results', 'backtest')):
         st.markdown("<h2 class='sub-header'>Existing Backtest Results</h2>", unsafe_allow_html=True)
@@ -770,7 +771,7 @@ def main():
                         # Add LLM-based signal explanation
                         with st.expander("Signal Analysis"):
                             if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
-                                strategy_explainer = StrategyExplainer(advanced_config['sentiment'])
+                                strategy_explainer = StrategyExplainer(config=advanced_config['sentiment'])
                                 with st.spinner("Analyzing trading signals..."):
                                     explanation = strategy_explainer.explain_trading_signals(
                                         positions, strategies[strategy])
@@ -837,24 +838,24 @@ def main():
                         with st.spinner("Generating response..."):
                             response = st.session_state.chatbot.get_response(user_query)
                             # Force a rerun to display the new messages
-                            st.experimental_rerun()
+                            st.rerun()
                     else:
                         st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
                         response = st.session_state.chatbot.get_response(user_query)
                         # Force a rerun to display the new messages
-                        st.experimental_rerun()
+                        st.rerun()
 
                 # Add buttons to clear conversation or context
                 col1, col2 = st.columns(2)
                 with col1:
                     if st.button("Clear Conversation", key="clear_conversation_existing"):
                         st.session_state.chatbot.clear_conversation()
-                        st.experimental_rerun()
+                        st.rerun()
                 with col2:
                     if st.button("Reset Assistant", key="reset_assistant_existing"):
                         st.session_state.chatbot.clear_conversation()
                         st.session_state.chatbot.clear_context()
-                        st.experimental_rerun()
+                        st.rerun()
         else:
             st.warning("No existing backtest results found. Please run a backtest first.")
 

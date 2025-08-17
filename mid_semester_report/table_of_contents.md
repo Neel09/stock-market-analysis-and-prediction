@@ -62,6 +62,13 @@
 8.7 Future Improvements
 8.8 Conclusion
 
+## Chapter 9: Backtest Results and Analysis
+9.1 Introduction
+9.2 Performance Metrics Overview
+9.3 Strategy Performance Analysis
+9.4 Comparative Analysis
+9.5 Conclusions and Recommendations
+
 ## Bibliography/References
 
 ## Appendices

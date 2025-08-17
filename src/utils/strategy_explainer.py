@@ -9,7 +9,7 @@ class StrategyExplainer:
     """
     A class to explain strategy comparisons and trading results using LLM.
     """
-    def __init__(self, config=None, config_path=None):
+    def __init__(self, config=None, config_path='config/config.json'):
         """
         Initialize the StrategyExplainer.
 

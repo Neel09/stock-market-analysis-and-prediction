@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image
 from datetime import datetime, timedelta
 import time
+import json
 
 # To Avoid decompression bomb
 Image.MAX_IMAGE_PIXELS = None
@@ -92,7 +93,11 @@ def load_results(strategy_name):
     plot_path = os.path.join('results', 'backtest', f"{strategy_name}_plot.png")
 
     try:
-        metrics = pd.read_json(metrics_path)
+        with open(metrics_path) as f:
+            metrics_dict = json.load(f)
+
+        # make it a one-row DataFrame so it's consistent
+        metrics = pd.DataFrame([metrics_dict])
         positions = pd.read_csv(positions_path, index_col=0)
         returns = pd.read_csv(returns_path, index_col=0)
         portfolio = pd.read_csv(portfolio_path, index_col=0)
@@ -662,14 +667,20 @@ def main():
                     if user_query:
                         if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
                             with st.spinner("Generating response..."):
+                                # Store the query in session state to avoid infinite loop
+                                if 'last_query_tab4' not in st.session_state or st.session_state.last_query_tab4 != user_query:
+                                    st.session_state.last_query_tab4 = user_query
+                                    response = st.session_state.chatbot.get_response(user_query)
+                                    # Force a rerun to display the new messages
+                                    st.rerun()
+                        else:
+                            st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
+                            # Store the query in session state to avoid infinite loop
+                            if 'last_query_tab1' not in st.session_state or st.session_state.last_query_tab1 != user_query:
+                                st.session_state.last_query_tab1 = user_query
                                 response = st.session_state.chatbot.get_response(user_query)
                                 # Force a rerun to display the new messages
                                 st.rerun()
-                        else:
-                            st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
-                            response = st.session_state.chatbot.get_response(user_query)
-                            # Force a rerun to display the new messages
-                            st.rerun()
 
                     # Add buttons to clear conversation or context
                     col1, col2 = st.columns(2)
@@ -836,14 +847,20 @@ def main():
                 if user_query:
                     if 'sentiment' in advanced_config and advanced_config['sentiment'].get('llm_api_key'):
                         with st.spinner("Generating response..."):
+                            # Store the query in session state to avoid infinite loop
+                            if 'last_query_existing' not in st.session_state or st.session_state.last_query_existing != user_query:
+                                st.session_state.last_query_existing = user_query
+                                response = st.session_state.chatbot.get_response(user_query)
+                                # Force a rerun to display the new messages
+                                st.rerun()
+                    else:
+                        st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
+                        # Store the query in session state to avoid infinite loop
+                        if 'last_query' not in st.session_state or st.session_state.last_query != user_query:
+                            st.session_state.last_query = user_query
                             response = st.session_state.chatbot.get_response(user_query)
                             # Force a rerun to display the new messages
                             st.rerun()
-                    else:
-                        st.info("To get AI-powered responses, please add your LLM API key in the sidebar under 'LLM Options'.")
-                        response = st.session_state.chatbot.get_response(user_query)
-                        # Force a rerun to display the new messages
-                        st.rerun()
 
                 # Add buttons to clear conversation or context
                 col1, col2 = st.columns(2)

@@ -110,7 +110,7 @@ The system generates the following outputs:
 ## Project Structure
 
 ```
-algorithmic-trading/
+stock-market-analysis-and-prediction/
 ├── config/
 │   └── config.json        # Configuration file
 ├── src/
@@ -119,6 +119,10 @@ algorithmic-trading/
 │   │   ├── data_processor.py      # Data processing utilities
 │   │   ├── nifty_data_fetcher.py  # Nifty 50 data fetcher
 │   │   └── performance_metrics.py # Performance calculation utilities
+│   │   └── sentiment_analyzer.py  # Sentiment Analyzer utilities
+│   │   └── news_fetcher.py        # News Fetcher utilities
+│   │   └── strategy_explainer.py  # Strategy Explainer utilities
+│   │   └── chatbot_interface.py   # Chatbot Interface utilities
 │   ├── strategies/         # Trading strategy implementations
 │   │   ├── base_strategy.py       
 │   │   ├── moving_average_crossover.py
@@ -127,6 +131,7 @@ algorithmic-trading/
 │   │   ├── bollinger_bands.py
 │   │   ├── ml_strategy.py
 │   │   └── lstm_strategy.py
+│   │   └── sentiment_strategy.py
 │   ├── backtest/           # Backtesting framework
 │   │   ├── backtest_engine.py     # Core backtesting engine
 │   │   └── run_backtest.py        # Backtest runner for multiple strategies
@@ -139,6 +144,7 @@ algorithmic-trading/
 ├── results/                       # Results storage
 │   └── backtest/                  # Backtest results
 ├── nifty50_rsi_example.py         # Example script for RSI strategy
+├── nifty50_sentiment_example.py   # Example script for Sentiment strategy
 ├── nifty_backtest.py              # Command-line backtest script
 └── run_nifty.py                   # Legacy command-line script
 ```

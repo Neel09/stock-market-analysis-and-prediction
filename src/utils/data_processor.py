@@ -113,8 +113,8 @@ class DataProcessor:
         df['close_sma50_ratio'] = df['Close'] / df['sma_50']
         df['close_sma200_ratio'] = df['Close'] / df['sma_200']
 
-        # Drop NaN values
-        df = df.dropna()
+        # Fill NaN values instead of dropping them
+        df = df.fillna(0)
 
         return df
 
@@ -282,26 +282,25 @@ class DataProcessor:
 
         if len(news_articles) == 0:
             print("Warning: No news articles found. Using neutral sentiment.")
-            df.loc[latest_date, 'sentiment_score'] = 0
-            df.loc[latest_date, 'sentiment_signal'] = 0
+            df['sentiment_score'] = 0
+            df['sentiment_signal'] = 0
         else:
             # Analyze sentiment for each news article
             print("Analyzing sentiment for news articles...")
-            # sentiment_results = sentiment_analyzer.analyze_news_batch([
-            #     f"{article['title']}. {article['description']}"
-            #     for article in news_articles
-            # ])
-            # print(f"Sentiment analysis results: {sentiment_results}")
+            sentiment_results = sentiment_analyzer.analyze_news_batch([
+                f"{article['title']}. {article['description']}"
+                for article in news_articles
+            ])
+            print(f"Sentiment analysis results: {sentiment_results}")
 
             # Calculate aggregate sentiment
-            # aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
-            aggregate_sentiment = sentiment_analyzer.get_mocked_aggeregate_sentiment()
+            aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
             print(f"Aggregate sentiment: {aggregate_sentiment}")
 
             # Add sentiment data to the dataframe
-            # We'll add it to the latest date in the dataframe
-            df.loc[latest_date, 'sentiment_score'] = aggregate_sentiment['aggregate_score']
-            df.loc[latest_date, 'sentiment_signal'] = aggregate_sentiment['sentiment_signal']
+            # Add it to all dates in the dataframe to ensure index consistency
+            df['sentiment_score'] = aggregate_sentiment['aggregate_score']
+            df['sentiment_signal'] = aggregate_sentiment['sentiment_signal']
 
         # Fill NaN values with 0 (for dates without sentiment data)
         df['sentiment_score'] = df['sentiment_score'].fillna(0)
@@ -351,26 +350,25 @@ class DataProcessor:
 
         if len(market_news) == 0:
             print("Warning: No market news articles found. Using neutral sentiment.")
-            df.loc[latest_date, 'market_sentiment_score'] = 0
-            df.loc[latest_date, 'market_sentiment_signal'] = 0
+            df['market_sentiment_score'] = 0
+            df['market_sentiment_signal'] = 0
         else:
             # Analyze sentiment for each news article
             print("Analyzing sentiment for market news articles...")
-            # sentiment_results = sentiment_analyzer.analyze_news_batch([
-            #     f"{article['title']}. {article['description']}"
-            #     for article in market_news
-            # ])
-            # print(f"Market sentiment analysis results: {sentiment_results}")
+            sentiment_results = sentiment_analyzer.analyze_news_batch([
+                f"{article['title']}. {article['description']}"
+                for article in market_news
+            ])
+            print(f"Market sentiment analysis results: {sentiment_results}")
 
             # Calculate aggregate sentiment
-            # aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
-            aggregate_sentiment = sentiment_analyzer.get_mocked_aggeregate_sentiment()
+            aggregate_sentiment = sentiment_analyzer.get_aggregate_sentiment(sentiment_results)
             print(f"Aggregate market sentiment: {aggregate_sentiment}")
 
             # Add market sentiment data to the dataframe
-            # We'll add it to the latest date in the dataframe
-            df.loc[latest_date, 'market_sentiment_score'] = aggregate_sentiment['aggregate_score']
-            df.loc[latest_date, 'market_sentiment_signal'] = aggregate_sentiment['sentiment_signal']
+            # Add it to all dates in the dataframe to ensure index consistency
+            df['market_sentiment_score'] = aggregate_sentiment['aggregate_score']
+            df['market_sentiment_signal'] = aggregate_sentiment['sentiment_signal']
 
         # Fill NaN values with 0 (for dates without sentiment data)
         df['market_sentiment_score'] = df['market_sentiment_score'].fillna(0)

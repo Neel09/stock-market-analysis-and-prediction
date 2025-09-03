@@ -80,7 +80,7 @@ class SentimentAnalyzer:
         return results
 
 
-    def get_mocked_aggeregate_sentiment(self):
+    def get_mocked_aggregate_sentiment(self):
         return {'aggregate_score': -0.08833819241982506, 'sentiment_signal': -0.08833819241982506}
 
     def get_aggregate_sentiment(self, sentiment_results):

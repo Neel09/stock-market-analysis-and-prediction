@@ -58,23 +58,32 @@ class SentimentStrategy(BaseStrategy):
         if self.use_technical_indicators:
             self.data = self.data_processor.add_technical_indicators(self.data)
 
-        # Add sentiment data
-        self.data = self.data_processor.add_sentiment_data(
-            self.data, 
-            self.symbol, 
-            self.config.get('sentiment', {}), 
-            self.days, 
-            self.max_news
-        )
+        try:
+            # Add sentiment data
+            self.data = self.data_processor.add_sentiment_data(
+                self.data, 
+                self.symbol, 
+                self.config.get('sentiment', {}), 
+                self.days, 
+                self.max_news
+            )
 
-        # Add market sentiment data
-        self.data = self.data_processor.add_market_sentiment_data(
-            self.data, 
-            "India", 
-            self.config.get('sentiment', {}), 
-            self.days, 
-            self.max_news
-        )
+            # Add market sentiment data
+            self.data = self.data_processor.add_market_sentiment_data(
+                self.data, 
+                "India", 
+                self.config.get('sentiment', {}), 
+                self.days, 
+                self.max_news
+            )
+        except Exception as e:
+            print(f"Warning: Error adding sentiment data: {e}")
+            print("Using default neutral sentiment.")
+            # Ensure sentiment columns exist with default values
+            if 'sentiment_signal' not in self.data.columns:
+                self.data['sentiment_signal'] = 0
+            if 'market_sentiment_signal' not in self.data.columns:
+                self.data['market_sentiment_signal'] = 0
 
         # Calculate combined sentiment signal
         self.calculate_combined_sentiment()
@@ -83,9 +92,12 @@ class SentimentStrategy(BaseStrategy):
         """
         Calculate a combined sentiment signal using stock-specific and market sentiment.
         """
-        # Ensure sentiment columns exist
+        # Check if sentiment columns exist
         if 'sentiment_signal' not in self.data.columns or 'market_sentiment_signal' not in self.data.columns:
-            raise ValueError("Sentiment data not found in dataframe. Run preprocess_data first.")
+            print("Warning: Sentiment data not found in dataframe. Adding default neutral sentiment.")
+            # Add default neutral sentiment
+            self.data['sentiment_signal'] = 0
+            self.data['market_sentiment_signal'] = 0
 
         # Calculate combined sentiment
         stock_weight = 1 - self.market_sentiment_weight
@@ -102,7 +114,7 @@ class SentimentStrategy(BaseStrategy):
         Generate trading signals based on sentiment analysis.
 
         Returns:
-            pandas.DataFrame: DataFrame with signals
+            pandas.Series: Series with signals
         """
         # Ensure data is preprocessed
         if 'combined_sentiment' not in self.data.columns:
@@ -116,29 +128,60 @@ class SentimentStrategy(BaseStrategy):
         signals['signal'] = 0
 
         print(f"Generating signals with sentiment threshold: {self.sentiment_threshold}")
-        print(f"Combined sentiment values: {signals['combined_sentiment'].values}")
 
-        # Count how many rows exceed the threshold
-        positive_sentiment = (signals['combined_sentiment'] > self.sentiment_threshold).sum()
-        negative_sentiment = (signals['combined_sentiment'] < -self.sentiment_threshold).sum()
-        print(f"Rows with positive sentiment > threshold: {positive_sentiment}")
-        print(f"Rows with negative sentiment < -threshold: {negative_sentiment}")
+        # Check if we have sentiment data
+        if 'combined_sentiment' in signals.columns:
+            print(f"Combined sentiment values: {signals['combined_sentiment'].values}")
 
-        # Generate signals based on sentiment
-        signals.loc[signals['combined_sentiment'] > self.sentiment_threshold, 'signal'] = 1
-        signals.loc[signals['combined_sentiment'] < -self.sentiment_threshold, 'signal'] = -1
+            # Count how many rows exceed the threshold
+            positive_sentiment = (signals['combined_sentiment'] > self.sentiment_threshold).sum()
+            negative_sentiment = (signals['combined_sentiment'] < -self.sentiment_threshold).sum()
+            print(f"Rows with positive sentiment > threshold: {positive_sentiment}")
+            print(f"Rows with negative sentiment < -threshold: {negative_sentiment}")
 
-        # If using technical indicators, incorporate them into the signal
-        if self.use_technical_indicators and 'rsi' in signals.columns:
-            print("Using RSI as confirmation indicator")
-            # Use RSI as a confirmation indicator
-            # Buy only if RSI is not overbought and sentiment is positive
-            signals.loc[(signals['combined_sentiment'] > self.sentiment_threshold) & 
-                        (signals['rsi'] > 70), 'signal'] = 0
+            # If no sentiment signals exceed the threshold, use technical indicators as fallback
+            if positive_sentiment == 0 and negative_sentiment == 0:
+                print("No sentiment signals exceed threshold. Using technical indicators as fallback.")
+                if self.use_technical_indicators and 'rsi' in signals.columns:
+                    # Generate signals based on RSI
+                    signals.loc[signals['rsi'] < 30, 'signal'] = 1  # Buy when RSI is oversold
+                    signals.loc[signals['rsi'] > 70, 'signal'] = -1  # Sell when RSI is overbought
+                    print(f"Generated {(signals['signal'] != 0).sum()} signals based on RSI")
+                else:
+                    # Generate some basic signals based on price movements
+                    print("Using price movements as fallback")
+                    signals.loc[signals['Close'] > signals['sma_20'], 'signal'] = 1  # Buy when price above SMA20
+                    signals.loc[signals['Close'] < signals['sma_20'], 'signal'] = -1  # Sell when price below SMA20
+                    print(f"Generated {(signals['signal'] != 0).sum()} signals based on price movements")
+            else:
+                # Generate signals based on sentiment
+                signals.loc[signals['combined_sentiment'] > self.sentiment_threshold, 'signal'] = 1
+                signals.loc[signals['combined_sentiment'] < -self.sentiment_threshold, 'signal'] = -1
 
-            # Sell only if RSI is not oversold and sentiment is negative
-            signals.loc[(signals['combined_sentiment'] < -self.sentiment_threshold) & 
-                        (signals['rsi'] < 30), 'signal'] = 0
+                # If using technical indicators, incorporate them into the signal
+                if self.use_technical_indicators and 'rsi' in signals.columns:
+                    print("Using RSI as confirmation indicator")
+                    # Use RSI as a confirmation indicator
+                    # Buy only if RSI is not overbought and sentiment is positive
+                    signals.loc[(signals['combined_sentiment'] > self.sentiment_threshold) & 
+                                (signals['rsi'] > 70), 'signal'] = 0
+
+                    # Sell only if RSI is not oversold and sentiment is negative
+                    signals.loc[(signals['combined_sentiment'] < -self.sentiment_threshold) & 
+                                (signals['rsi'] < 30), 'signal'] = 0
+        else:
+            print("Warning: No combined sentiment data found in dataframe. Using technical indicators as fallback.")
+            if self.use_technical_indicators and 'rsi' in signals.columns:
+                # Generate signals based on RSI
+                signals.loc[signals['rsi'] < 30, 'signal'] = 1  # Buy when RSI is oversold
+                signals.loc[signals['rsi'] > 70, 'signal'] = -1  # Sell when RSI is overbought
+                print(f"Generated {(signals['signal'] != 0).sum()} signals based on RSI")
+            else:
+                # Generate some basic signals based on price movements
+                print("Using price movements as fallback")
+                signals.loc[signals['Close'] > signals['sma_20'], 'signal'] = 1  # Buy when price above SMA20
+                signals.loc[signals['Close'] < signals['sma_20'], 'signal'] = -1  # Sell when price below SMA20
+                print(f"Generated {(signals['signal'] != 0).sum()} signals based on price movements")
 
         # Count final signals
         buy_signals = (signals['signal'] == 1).sum()
@@ -149,7 +192,8 @@ class SentimentStrategy(BaseStrategy):
         # Store signals
         self.signals = signals
 
-        return signals
+        # Return just the signal column as a Series to match the expected format
+        return signals['signal']
 
     def plot_sentiment(self, ax=None):
         """

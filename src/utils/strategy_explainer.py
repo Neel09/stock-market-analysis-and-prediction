@@ -172,8 +172,8 @@ class StrategyExplainer:
         """Format signals data for the prompt."""
         # Check if signals_data is a Series or DataFrame
         if isinstance(signals_data, pd.Series):
-            # If it's a Series, convert it to a DataFrame
-            signals_data = pd.DataFrame(signals_data)
+            # If it's a Series, convert it to a DataFrame with numeric values
+            signals_data = pd.DataFrame(signals_data.astype(float))
 
         # Count signal types
         buy_signals = (signals_data > 0).sum().sum()

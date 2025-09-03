@@ -16,6 +16,7 @@ from src.strategies.moving_average_crossover import MovingAverageCrossover
 from src.strategies.rsi_strategy import RSIStrategy
 from src.strategies.macd_strategy import MACDStrategy
 from src.strategies.bollinger_bands import BollingerBands
+from src.strategies.sentiment_strategy import SentimentStrategy
 from src.backtest.backtest_engine import BacktestEngine
 
 # Optional imports for ML and LSTM strategies
@@ -44,7 +45,7 @@ class BacktestRunner:
     def __init__(self, config_path=None):
         """
         Initialize the backtest runner.
-        
+
         Args:
             config_path (str): Path to configuration file
         """
@@ -76,7 +77,8 @@ class BacktestRunner:
             'moving_average_crossover': MovingAverageCrossover,
             'rsi_strategy': RSIStrategy,
             'macd_strategy': MACDStrategy,
-            'bollinger_bands': BollingerBands
+            'bollinger_bands': BollingerBands,
+            'sentiment_strategy': SentimentStrategy
         }
 
         # Add ML and LSTM strategies if available
@@ -94,12 +96,12 @@ class BacktestRunner:
     def fetch_data(self, symbol, period='1y', interval='1d', use_sample_data=True):
         """
         Fetch data for the specified symbol.
-        
+
         Args:
             symbol (str): The stock symbol
             period (str): Period to fetch
             interval (str): Data interval
-            
+
         Returns:
             pandas.DataFrame: The fetched data
         """
@@ -112,11 +114,11 @@ class BacktestRunner:
     def add_strategy(self, strategy_name, **kwargs):
         """
         Add a strategy to the backtest.
-        
+
         Args:
             strategy_name (str): Name of the strategy
             **kwargs: Additional parameters for the strategy
-            
+
         Returns:
             object: The strategy instance
         """
@@ -135,10 +137,10 @@ class BacktestRunner:
     def run_backtest(self, strategy_names=None):
         """
         Run backtest for the specified strategies.
-        
+
         Args:
             strategy_names (list, optional): List of strategy names to run
-            
+
         Returns:
             dict: Dictionary of backtest results
         """
@@ -187,11 +189,11 @@ class BacktestRunner:
     def compare_strategies(self, strategy_names=None, metrics=None):
         """
         Compare performance of multiple strategies.
-        
+
         Args:
             strategy_names (list, optional): List of strategy names to compare
             metrics (list, optional): List of metrics to compare
-            
+
         Returns:
             pandas.DataFrame: Comparison of metrics
         """
@@ -221,11 +223,11 @@ class BacktestRunner:
     def plot_comparison(self, strategy_names=None, figsize=(16, 10)):
         """
         Plot comparison of cumulative returns for multiple strategies.
-        
+
         Args:
             strategy_names (list, optional): List of strategy names to compare
             figsize (tuple): Figure size
-            
+
         Returns:
             matplotlib.figure.Figure: Comparison plot
         """

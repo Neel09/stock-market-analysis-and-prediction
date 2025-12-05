@@ -15,7 +15,23 @@
     "level": "INFO",
     "log_dir": "../logs"
   },
+  "sentiment": {
+    "llm_api_key": "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",
+    "llm_api_url": "https://api.perplexity.ai/chat/completions",
+    "llm_model": "sonar-pro",
+    "max_retries": 3,
+    "retry_delay": 2,
+    "news_api_key": "0fbe30fbfa3b49da958d23af668d6548",
+    "news_sources": "economictimes.indiatimes.com,livemint.com,business-standard.com,moneycontrol.com,timesofindia.indiatimes.com/business,finshots.in"
+  },
   "strategies": {
+    "sentiment_strategy": {
+      "sentiment_threshold": 0.2,
+      "market_sentiment_weight": 0.4,
+      "use_technical_indicators": true,
+      "days": 30,
+      "max_news": 10
+    },
     "moving_average_crossover": {
       "short_window": 50,
       "long_window": 200
@@ -35,11 +51,8 @@
       "num_std_dev": 2
     },
     "ml_strategy": {
-      "features": [
-        "rsi", "macd", "bb_width", "close_sma20_ratio",
-        "return_1d", "return_5d", "volume_ratio"
-      ],
-      "model_type": "logistic",
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
+      "model_type": "linear",
       "train_size": 0.7
     },
     "lstm_strategy": {
@@ -51,13 +64,14 @@
     },
     "ml_linear": {
       "train_size": 0.7,
-      "features": ["close", "volume", "rsi", "macd", "bollinger"],
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
+      "model_type": "linear",
       "target": "return_1d",
       "cv_folds": 5
     },
     "ml_ensemble": {
       "train_size": 0.7,
-      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr", "obv"],
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
       "target": "return_1d",
       "model_type": "random_forest",
       "n_estimators": 100,
@@ -67,12 +81,12 @@
     "lstm": {
       "train_size": 0.7,
       "sequence_length": 60,
-      "features": ["close", "volume", "rsi", "macd", "bollinger", "adx", "atr"],
+      "features": ["Close", "Volume","sma_20","sma_50","sma_200","ema_12","ema_26", "rsi", "macd", "macd_signal", "macd_hist", "psar","di_plus","di_minus","stoch_k","stoch_d","cci","willr","obv","volume_sma","volume_ratio","log_return","return_1d","return_5d","return_20d","close_sma20_ratio","close_sma50_ratio","close_sma200_ratio","bb_width", "ema_12", "ema_26", "atr", "adx"],
       "target": "return_1d",
       "epochs": 50,
       "batch_size": 32,
-      "neurons": [64, 32],
-      "dropout": 0.2
+      "neurons": [64, 64, 32],
+      "dropout": 0.0
     },
     "gru": {
       "train_size": 0.7,

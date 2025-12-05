@@ -11,7 +11,7 @@ import numpy as np
 try:
     import nsepy
 
-    USE_NSEPY = True
+    USE_NSEPY = False
 except ImportError:
     USE_NSEPY = False
     print("Warning: nsepy not found. Please install using: pip install nsepy")
@@ -19,10 +19,32 @@ except ImportError:
 try:
     import investpy
 
-    USE_INVESTPY = True
+    USE_INVESTPY = False
 except ImportError:
     USE_INVESTPY = False
     print("Warning: investpy not found. Please install using: pip install investpy")
+
+try:
+    import yfinance as yf
+
+    USE_YFINANCE = True
+except ImportError:
+    USE_YFINANCE = False
+    print("Warning: yfinance not found. Please install using: pip install yfinance")
+
+nifty_tickers = [
+    "ADANIENT.NS", "ADANIPORTS.NS", "APOLLOHOSP.NS", "ASIANPAINT.NS", "AXISBANK.NS",
+    "BAJAJ-AUTO.NS", "BAJFINANCE.NS", "BAJAJFINSV.NS", "BEL.NS", "BHARTIARTL.NS",
+    "CIPLA.NS", "COALINDIA.NS", "DRREDDY.NS", "EICHERMOT.NS", "GRASIM.NS",
+    "HCLTECH.NS", "HDFCBANK.NS", "HDFCLIFE.NS", "HEROMOTOCO.NS", "HINDALCO.NS",
+    "HAL.NS", "HINDUNILVR.NS", "ICICIBANK.NS",
+    "INDUSINDBK.NS", "INFY.NS", "ITC.NS",
+    "JIOFIN.NS", "JSWSTEEL.NS", "KOTAKBANK.NS", "LT.NS", "M&M.NS",
+    "MARUTI.NS", "NESTLEIND.NS", "NTPC.NS", "ONGC.NS", "POWERGRID.NS",
+    "RELIANCE.NS", "SBILIFE.NS", "SBIN.NS", "SHRIRAMFIN.NS", "SUNPHARMA.NS",
+    "TCS.NS", "TATACONSUM.NS", "TATAMOTORS.NS", "TATASTEEL.NS", "TECHM.NS",
+    "TITAN.NS", "TRENT.NS", "ULTRACEMCO.NS", "WIPRO.NS"
+]
 
 
 class NiftyDataFetcher:
@@ -102,26 +124,9 @@ class NiftyDataFetcher:
         return sample_data
 
     @staticmethod
-    def fetch_data_from_csv(file_path):
-        return pd.read_csv(file_path,index_col=0,parse_dates=True)
-
-    def fetch_nifty_data(self, period='5y', index_name="NIFTY 50", save=True, use_sample_if_needed=True):
-        """
-        Fetch Nifty 50 historical data.
-        
-        Args:
-            period (str): Period for data ('1y', '2y', '5y', etc.)
-            index_name (str): Index name (default: "NIFTY 50")
-            save (bool): Whether to save the data to a CSV file
-            use_sample_if_needed (bool): Whether to generate sample data if fetching fails
-            
-        Returns:
-            pandas.DataFrame: DataFrame containing the historical data
-        """
-
+    def get_start_end_date(period):
         # Calculate start and end dates based on period
         end_date = datetime.now().date()
-
         if period.endswith('y'):
             years = int(period[:-1])
             start_date = end_date - timedelta(days=365 * years)
@@ -135,20 +140,113 @@ class NiftyDataFetcher:
             # Default to 1 year
             start_date = end_date - timedelta(days=365)
 
-        print(f"Fetching {index_name} data from {start_date} to {end_date}")
+            # Fix for fetch date range - ensure dates are in the past not future
+        if start_date > end_date:
+            start_date, end_date = end_date, start_date
+        return end_date, start_date
+
+    def fetch_all_nifty_data(self, period='5y', interval='1d'):
+
+        # nifty_tickers = ["ADANIENT.NS"]
+
+        print(self.data_dir)
+        directory = f"{self.data_dir}/{interval}/{period}"
+
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+        for ticker_symbol in nifty_tickers:
+            end_date, start_date = self.get_start_end_date(period)
+            df = yf.download(ticker_symbol, period=period, interval=interval,
+                             start=start_date, end=end_date)
+
+            df = df.reset_index()
+            df = df.sort_values(by='Date', ascending=True)
+
+            file_name = f"{ticker_symbol.replace(' ', '_')}_{interval}_{period}.csv"
+            file_path = os.path.join(directory, file_name)
+
+            df.columns = df.columns.get_level_values(0)
+            df.to_csv(file_path, index=False)
+            print(f"Data saved to {file_path}")
+
+    @staticmethod
+    def fetch_data_from_csv(file_path):
+        return pd.read_csv(
+            file_path,
+            parse_dates=['Date'],  # parse the Date column properly
+            dtype={  # specify dtypes
+                'Close': float,
+                'High': float,
+                'Low': float,
+                'Open': float,
+                'Volume': int
+            }
+        )
+
+    def fetch_ticker_data_from_csv(self, ticker_symbol, period='10y', interval='1d'):
+        file_name = f"{ticker_symbol.replace(' ', '_')}_{interval}_{period}.csv"
+        file_path = os.path.join(self.data_dir, file_name)
+        return self.fetch_data_from_csv(file_path)
+
+    def fetch_nifty_data(self, period='5y', interval='1d', ticker_symbol="NIFTY 50", save=True,
+                         use_sample_if_needed=True):
+        """
+        Fetch Nifty 50 historical data.
+        
+        Args:
+            period (str): Period for data ('1y', '2y', '5y', etc.)
+            ticker_symbol (str): Index name (default: "NIFTY 50")
+            save (bool): Whether to save the data to a CSV file
+
+        Returns:
+            pandas.DataFrame: DataFrame containing the historical data
+        """
+
+        end_date, start_date = self.get_start_end_date(period)
+
+        print(f"Fetching {ticker_symbol} data from {start_date} to {end_date}")
 
         # Try to fetch real data
         try:
+
+            if USE_YFINANCE:
+                try:
+                    print(f"Using yfinance to fetch data from {start_date} to {end_date}")
+
+                    df = yf.download(ticker_symbol, period=period, interval=interval,
+                                     start=start_date, end=end_date)
+
+                    print(f"Data fetched successfully using Yahoo finance. Shape: {df.shape}")
+                    print(df.info())
+
+                    df = df.reset_index()
+                    df = df.sort_values(by='Date', ascending=True)
+                    print(df.info())
+
+                    # Save the data if requested
+                    if save and len(df) > 0:
+                        file_name = f"{ticker_symbol.replace(' ', '_')}_{interval}_{period}.csv"
+                        file_path = os.path.join(self.data_dir, file_name)
+
+                        # To Get rid of multi-index column headers
+                        df.columns = df.columns.get_level_values(0)
+                        df.to_csv(file_path, index=False)
+
+                        print(f"Data saved to {file_path}")
+
+                        df = self.fetch_data_from_csv(file_path)
+
+                    return df
+
+                except Exception as e:
+                    print(f"Error fetching data with Yahoo finance: {e}")
+
             # Try nsepy first
             if USE_NSEPY:
                 try:
                     print(f"Using nsepy to fetch data from {start_date} to {end_date}")
-
-                    # Fix for fetch date range - ensure dates are in the past not future
-                    if start_date > end_date:
-                        start_date, end_date = end_date, start_date
-
-                    data = nsepy.get_history(symbol=index_name,
+                    data = nsepy.get_history(symbol=ticker_symbol,
                                              start=start_date,
                                              end=end_date,
                                              index=True)
@@ -166,20 +264,11 @@ class NiftyDataFetcher:
                                 'VOLUME': 'Volume'
                             })
 
-                    # Try alternative approach using symbol="NIFTY" if no data
-                    if len(data) == 0:
-                        print(f"No data found for {index_name}, trying alternative symbol 'NIFTY'...")
-                        data = nsepy.get_history(symbol="NIFTY",
-                                                 start=start_date,
-                                                 end=end_date,
-                                                 index=True)
-                        print(f"Alternative fetch result: {data.shape} rows")
-
                     # If still no data, try with today's date as end_date
                     if len(data) == 0:
                         yesterday = datetime.now().date() - timedelta(days=1)
                         print(f"Still no data, trying with yesterday's date: {yesterday}")
-                        data = nsepy.get_history(symbol=index_name,
+                        data = nsepy.get_history(symbol=ticker_symbol,
                                                  start=start_date,
                                                  end=yesterday,
                                                  index=True)
@@ -190,7 +279,7 @@ class NiftyDataFetcher:
 
                         # Save the data if requested
                         if save and len(data) > 0:
-                            file_name = f"{index_name.replace(' ', '_')}_1d.csv"
+                            file_name = f"{ticker_symbol.replace(' ', '_')}_{interval}.csv"
                             file_path = os.path.join(self.data_dir, file_name)
                             data.to_csv(file_path)
                             print(f"Data saved to {file_path}")
@@ -216,7 +305,7 @@ class NiftyDataFetcher:
                         "NIFTY NEXT 50": "Nifty Next 50"
                     }
 
-                    investpy_index = index_map.get(index_name, index_name)
+                    investpy_index = index_map.get(ticker_symbol, ticker_symbol)
                     print(f"Using investpy index name: {investpy_index}")
 
                     data = investpy.get_index_historical_data(
@@ -231,7 +320,7 @@ class NiftyDataFetcher:
 
                         # Save the data if requested
                         if save and len(data) > 0:
-                            file_name = f"{index_name.replace(' ', '_')}_1d.csv"
+                            file_name = f"{ticker_symbol.replace(' ', '_')}_1d.csv"
                             file_path = os.path.join(self.data_dir, file_name)
                             data.to_csv(file_path)
                             print(f"Data saved to {file_path}")
@@ -244,14 +333,14 @@ class NiftyDataFetcher:
             # If we reach here, both methods failed
             if use_sample_if_needed:
                 print("Both nsepy and investpy failed to fetch data. Generating sample data instead.")
-                return self.generate_sample_data(start_date, end_date, index_name)
+                return self.generate_sample_data(start_date, end_date, ticker_symbol)
             else:
                 raise ValueError("Failed to fetch data from any source.")
 
         except Exception as e:
             if use_sample_if_needed:
                 print(f"Error fetching data: {e}. Generating sample data instead.")
-                return self.generate_sample_data(start_date, end_date, index_name)
+                return self.generate_sample_data(start_date, end_date, ticker_symbol)
             else:
                 raise
 
@@ -284,29 +373,33 @@ class NiftyDataFetcher:
 
 
 if __name__ == "__main__":
-
-    # fetcher = NiftyDataFetcher()
+    fetcher = NiftyDataFetcher()
     # data = fetcher.fetch_nifty_data(period="5y")
 
-    data = NiftyDataFetcher.fetch_data_from_csv('/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/Nifty_50_till_13June2025.csv')
+    fetcher.fetch_all_nifty_data(period="5y", interval='1d')
 
-    # Print basic statistics
-    print("\nBasic information about the data:")
-    print(data.info())
+    fetcher.fetch_ticker_data_from_csv("ADANIENT.NS")
 
-    print("\nSample data:")
-    print(data.head())
-
-    # Calculate and print basic return statistics
-    if 'Close' in data.columns:
-        returns = data['Close'].pct_change().dropna()
-        print("\nReturn statistics:")
-        print(returns.describe())
-
-        annualized_return = ((1 + returns.mean()) ** 252) - 1
-        annualized_volatility = returns.std() * (252 ** 0.5)
-        sharpe_ratio = annualized_return / annualized_volatility
-
-        print(f"\nAnnualized Return: {annualized_return:.2%}")
-        print(f"Annualized Volatility: {annualized_volatility:.2%}")
-        print(f"Sharpe Ratio: {sharpe_ratio:.4f}")
+    # data = NiftyDataFetcher.fetch_data_from_csv(
+    #     '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/Nifty_50_till_13June2025.csv')
+    #
+    # # Print basic statistics
+    # print("\nBasic information about the data:")
+    # print(data.info())
+    #
+    # print("\nSample data:")
+    # print(data.head())
+    #
+    # # Calculate and print basic return statistics
+    # if 'Close' in data.columns:
+    #     returns = data['Close'].pct_change().dropna()
+    #     print("\nReturn statistics:")
+    #     print(returns.describe())
+    #
+    #     annualized_return = ((1 + returns.mean()) ** 252) - 1
+    #     annualized_volatility = returns.std() * (252 ** 0.5)
+    #     sharpe_ratio = annualized_return / annualized_volatility
+    #
+    #     print(f"\nAnnualized Return: {annualized_return:.2%}")
+    #     print(f"Annualized Volatility: {annualized_volatility:.2%}")
+    #     print(f"Sharpe Ratio: {sharpe_ratio:.4f}")

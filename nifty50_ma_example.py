@@ -27,23 +27,25 @@ def main():
     """
     # Fetch Nifty 50 data
     print("Fetching Nifty 50 data...")
-    # fetcher = NiftyDataFetcher()
+    fetcher = NiftyDataFetcher()
     # data = fetcher.fetch_nifty_data(period="1y", index_name="NIFTY 50")
-    data = NiftyDataFetcher.fetch_data_from_csv(
-        '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
+    data = fetcher.fetch_ticker_data_from_csv(ticker_symbol="BAJAJFINSV.NS")
+    # data = NiftyDataFetcher.fetch_data_from_csv(
+    #     '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
 
     print(f"Data shape: {data.shape}")
     print(f"Date range: {data.index[0]} to {data.index[-1]}")
 
     # Initialize RSI strategy
     print("\nInitializing MA strategy...")
-    rsi_strategy = MovingAverageCrossover(
-        data=data
+    ma_strategy = MovingAverageCrossover(
+        data=data,
+        config_path='config/config.json'
     )
 
     # Run backtest
     print("Running backtest...")
-    results = rsi_strategy.run_backtest()
+    results = ma_strategy.run_backtest()
 
     # Print performance metrics
     print("\nPerformance Metrics:")
@@ -58,7 +60,7 @@ def main():
 
     # Plot results
     print("\nPlotting results...")
-    fig = rsi_strategy.plot_results()
+    fig = ma_strategy.plot_results()
 
     # Show plot
     plt.tight_layout()

@@ -7,6 +7,8 @@ import sys
 import os
 import joblib
 
+from src.utils.nifty_data_fetcher import NiftyDataFetcher
+
 # Add the project root to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from src.strategies.base_strategy import BaseStrategy
@@ -20,7 +22,7 @@ class MLStrategy(BaseStrategy):
     This strategy uses machine learning models to generate trading signals.
     """
     
-    def __init__(self, data=None, config=None, config_path=None, model_type='logistic',
+    def __init__(self, data=None, config=None, config_path=None, model_type='linear',
                 features=None, target_column='return_1d', train_size=0.7, threshold=0.5):
         """
         Initialize the ML strategy.
@@ -123,7 +125,7 @@ class MLStrategy(BaseStrategy):
         predictions = self.ml_model.predict(X)
         
         # Convert predictions to signals
-        signals = pd.Series(0, index=self.data.index)
+        signals = pd.Series(0, index=X.index)
         
         if self.model_type == 'logistic':
             # For logistic regression, we use probability threshold
@@ -239,7 +241,8 @@ if __name__ == '__main__':
     
     # Fetch data
     fetcher = DataFetcher(config_path)
-    data = fetcher.fetch_data('AAPL', period='2y')
+    data = NiftyDataFetcher.fetch_data_from_csv(
+        '/Users/neelansh/Desktop/Projects/My Projects/Stock Market Data/TATAMOTORS_till_13June2025.csv')
     
     # Initialize strategy
     strategy = MLStrategy(data=data, config=config, model_type='logistic')
